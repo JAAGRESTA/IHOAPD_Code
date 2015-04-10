@@ -1,26 +1,26 @@
-/* IHOAP - Infrared Head-Operated Assistive Pointing Device Arduino Code
+/* IHOAPD - Infrared Head-Operated Assistive Pointing Device Arduino Code
 *  ECE 2799 Team 8: Joe Agresta, Giselle Verbera, and Sean Watson
 * 
 */
-#include <Mouse.h>
-#define leftSensorPin A0
-#define rightSensorPin A1
+
+#define leftSensorPin A1
+#define rightSensorPin A0
 #define topSensorPin A2
 #define downSensorPin A3
 #define leftButtonPin 3
 #define rightButtonPin 2
 int topVal = 0, downVal = 0, leftVal = 0, rightVal = 0;
-int threshold = 300;
-int cursorStep = 10;
+int hThreshold = 400;
+int lThreshold = 200;
+float cursorStep = 1;
 
-enum clickState 
-{
-	clicked;
-	released;
-}
-
-clickState left = released;
-clickState right = released;
+//enum clickState 
+// {
+//   clicked;
+//   released;
+// }
+//clickState left = released;
+//clickState right = released;
 
 //one-time code
 void setup()
@@ -31,8 +31,8 @@ void setup()
   pinMode(topSensorPin, INPUT);
   pinMode(downSensorPin, INPUT);
   Mouse.begin();
-  attachInterrupt(0, leftClickISR, CHANGE); //interrupt 0 is pin 3 on the leonardo
-  attachInterrupt(1, rightClickISR, CHANGE); //interrupt 1 is pin 2 on the leonardo
+ // attachInterrupt(0, leftClickISR, CHANGE); //interrupt 0 is pin 3 on the leonardo
+ // attachInterrupt(1, rightClickISR, CHANGE); //interrupt 1 is pin 2 on the leonardo
 
 }
 
@@ -40,7 +40,9 @@ void setup()
 void loop()
 {
 	readSensors();
+        printValues();
 	compareSensors(); 
+        delay(3);
 }
 
 //reads all IR sensor values and sets the corresponding variables
@@ -48,28 +50,46 @@ void readSensors()
 {
 	getLeftVal();
 	getRightVal();
-	getTopVal();
-	getDownVal();
+	//getTopVal();
+	//getDownVal();
 }
 
 void compareSensors()
 {
-	if((topVal > threshold) && (topVal > downVal))
-	{
-		Mouse.move(0, cursorStep, 0); //move mouse up
-	}
-	else if ((downVal > threshold) && (downVal > topVal))
-	{
-		Mouse.move(0, -1*cursorStep, 0); //move mouse down
-	} 
-	if ((leftVal > threshold) && (leftVal > rightVal))
-	{
-		Mouse.move(-1*cursorStep, 0, 0); //move mouse left
-	} 
-	else if((rightVal > threshold) && (rightVal > leftVal))
-	{
-		Mouse.move(cursorStep, 0, 0); //move mouse right
-	}
+  if(leftVal > hThreshold)
+  {
+    Mouse.move(cursorStep, 0, 0); //move mouse right
+  }
+  else if (leftVal < lThreshold)
+  {
+    Mouse.move(-1*cursorStep, 0, 0); //move mouse left
+  }
+  
+   if(rightVal > hThreshold)
+  {
+      Mouse.move(0, -1*cursorStep, 0); //move mouse down
+  }
+  else if (rightVal < lThreshold)
+  {
+      Mouse.move(0, cursorStep, 0); //move mouse up
+  }
+  
+//	if((topVal > threshold) && (topVal > downVal))
+//	{
+//		Mouse.move(0, cursorStep, 0); //move mouse up
+//	}
+//	else if ((downVal > threshold) && (downVal > topVal))
+//	{
+//		Mouse.move(0, -1*cursorStep, 0); //move mouse down
+//	} 
+//	if ((leftVal > threshold) && (leftVal > rightVal))
+//	{
+//		Mouse.move(-1*cursorStep, 0, 0); //move mouse left
+//	} 
+//	else if((rightVal > threshold) && (rightVal > leftVal))
+//	{
+//		Mouse.move(cursorStep, 0, 0); //move mouse right
+//	}
 }
 
 
@@ -97,32 +117,38 @@ void getDownVal()
 	downVal = analogRead(downSensorPin);
 }
 
-//hold left button when pressed until it is released, interrupt service routine
-void leftClickISR() 
+void printValues()
 {
-	if(left == released)
-	{
-		Mouse.press(MOUSE_LEFT);
-		left = clicked;    
-	}
-	else if(left == clicked)
-	{
-		Mouse.released(MOUSE_LEFT);
-		left = released;
-	}
+ Serial.print(leftVal); 
+ Serial.print(",");
+ Serial.println(rightVal);
 }
-
-//hold right button when pressed until it is released, interrupt service routine
-void rightClickISR() 
-{
-	if(right == released)
-	{
-		Mouse.press(MOUSE_RIGHT);
-		right = clicked;    
-	}
-	else if(right == clicked)
-	{
-		Mouse.released(MOUSE_RIGHT);
-		right = released;
-	}
-}
+////hold left button when pressed until it is released, interrupt service routine
+//void leftClickISR() 
+//{
+//	if(left == released)
+//	{
+//		Mouse.press(MOUSE_LEFT);
+//		left = clicked;    
+//	}
+//	else if(left == clicked)
+//	{
+//		Mouse.released(MOUSE_LEFT);
+//		left = released;
+//	}
+//}
+//
+////hold right button when pressed until it is released, interrupt service routine
+//void rightClickISR() 
+//{
+//	if(right == released)
+//	{
+//		Mouse.press(MOUSE_RIGHT);
+//		right = clicked;    
+//	}
+//	else if(right == clicked)
+//	{
+//		Mouse.released(MOUSE_RIGHT);
+//		right = released;
+//	}
+//}
