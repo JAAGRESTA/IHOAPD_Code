@@ -39,17 +39,19 @@ void setup()
   pinMode(topSensorPin, INPUT);
   pinMode(downSensorPin, INPUT);
   pinMode(ledPin, OUTPUT);
-  Timer1.initialize(52);
-  Timer1.attachInterrupt(pulseLED);
-  attachInterrupt(0, leftClickISR, RISING); //interrupt 0 is pin 3 on the leonardo
-  // attachInterrupt(1, rightClickISR, CHANGE); //interrupt 1 is pin 2 on the leonardo
+  pinMode(leftButtonPin, INPUT);
+  pinMode(rightButtonPin, INPUT);
+  //attachInterrupt(0, leftClickISR, CHANGE); //interrupt 0 is pin 3 on the leonardo
+  //attachInterrupt(1, rightClickISR, CHANGE); //interrupt 1 is pin 2 on the leonardo
   Mouse.begin();
 }
 
 //main code
 void loop()
 {
-  IRtest();
+  checkButtons();
+ // IRtest();
+  delay(2);
   //readSensors();
   //printValues();
   //compareSensors(); 
@@ -77,46 +79,8 @@ void calibrate()
   vCal = topVal - downVal;
 }
 
-//ISR to pulse LED based off of Timer1 interrupt
-void pulseLED()
-{
- if(timerFlag == 0 && ((burstCounter <= 10) != 0))
- {
-   digitalWrite(ledPin, HIGH);
-   timerFlag = 1;
- }
- else if(timerFlag == 1)
- {
-   digitalWrite(ledPin, LOW);
-   timerFlag =0 ;
- } 
- if(burstCounter == 20)
- {
-   burstCounter = 0;
- }
-  burstCounter++;
-}
-//etch-a-sketch test
-void easTest()
-{
-   if(leftVal > hThreshold)
-  {
-    Mouse.move(cursorStep, 0, 0); //move mouse right
-  }
-  else if (leftVal < lThreshold)
-  {
-    Mouse.move(-1*cursorStep, 0, 0); //move mouse left
-  }
-  
-   if(rightVal > hThreshold)
-  {
-      Mouse.move(0, -1*cursorStep, 0); //move mouse down
-  }
-  else if (rightVal < lThreshold)
-  {
-      Mouse.move(0, cursorStep, 0); //move mouse up
-  }
-}
+
+
 
 //horizontal cursor test using photo-resistors
 void hTest()
@@ -143,7 +107,36 @@ void hTest()
 void IRtest()
 {
   getLeftVal();
+  if(leftVal > lThreshold)
+  {
+   Mouse.move(-1*cursorStep, 0, 0); //move mouse left
+  }
+  else 
+  {
+    //Mouse.move(cursorStep, 0, 0); //move mouse right
+  }
   Serial.println(leftVal);
+}
+
+//looks at button voltage values, decides if a click should happen or not
+void checkButtons()
+{
+  if(digitalRead(leftButtonPin) == LOW)
+  {
+    Mouse.press(MOUSE_LEFT);
+  }
+  else if(digitalRead(leftButtonPin) == HIGH)
+  {
+    Mouse.release(MOUSE_LEFT);
+  }
+   if(digitalRead(rightButtonPin) == LOW)
+  {
+    Mouse.press(MOUSE_RIGHT);
+  }
+  else if(digitalRead(rightButtonPin) == HIGH)
+  {
+    Mouse.release(MOUSE_RIGHT);
+  }
 }
 
 
@@ -204,32 +197,33 @@ void printValues()
  Serial.print(" , Bottom = ");
  Serial.println(downVal);
 }
-//hold left button when pressed until it is released, interrupt service routine
-void leftClickISR() 
-{
-	if(left == released)
-	{
-		Mouse.press(MOUSE_LEFT);
-		left = clicked;    
-	}
-	else if(left == clicked)
-	{
-		Mouse.release(MOUSE_LEFT);
-		left = released;
-	}
-}
 
-//hold right button when pressed until it is released, interrupt service routine
-void rightClickISR() 
-{
-	if(right == released)
-	{
-		Mouse.press(MOUSE_RIGHT);
-		right = clicked;    
-	}
-	else if(right == clicked)
-	{
-		Mouse.release(MOUSE_RIGHT);
-		right = released;
-	}
-}
+////hold left button when pressed until it is released, interrupt service routine
+//void leftClickISR() 
+//{
+//	if(left == released)
+//	{
+//		Mouse.press(MOUSE_LEFT);
+//		left = clicked;    
+//	}
+//	else if(left == clicked)
+//	{
+//		Mouse.release(MOUSE_LEFT);
+//		left = released;
+//	}
+//}
+//
+////hold right button when pressed until it is released, interrupt service routine
+//void rightClickISR() 
+//{
+//	if(right == released)
+//	{
+//		Mouse.press(MOUSE_RIGHT);
+//		right = clicked;    
+//	}
+//	else if(right == clicked)
+//	{
+//		Mouse.release(MOUSE_RIGHT);
+//		right = released;
+//	}
+//}
