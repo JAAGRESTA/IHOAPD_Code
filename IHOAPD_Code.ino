@@ -2,8 +2,6 @@
 *  ECE 2799 Team 8: Joe Agresta, Giselle Verbera, and Sean Watson
 * 
 */
-
-#include "TimerOne.h"
 //pin configuration
 #define leftSensorPin A0
 #define rightSensorPin A1
@@ -11,24 +9,16 @@
 #define downSensorPin A3
 #define leftButtonPin 3
 #define rightButtonPin 2
-#define ledPin 10
+#define leftLEDPin 4
+#define rightLEDPin 5
+#define topLEDPin 6
+#define downLEDPin 7
+ 
+
 int topVal = 0, downVal = 0, leftVal = 0, rightVal = 0;
-int hThreshold = 600;
-int lThreshold = 300;
-int lightThreshold = 915;
-int timerFlag = 0;
-int burstCounter = 0;
+int threshold = 200;
 int hCal = 0, vCal = 0;
 float cursorStep = 1;
-
-//button states
-enum clickState 
- {
-   clicked,
-   released
- };
-clickState left = released;
-clickState right = released;
 
 //one-time code
 void setup()
@@ -38,11 +28,8 @@ void setup()
   pinMode(rightSensorPin, INPUT);
   pinMode(topSensorPin, INPUT);
   pinMode(downSensorPin, INPUT);
-  pinMode(ledPin, OUTPUT);
   pinMode(leftButtonPin, INPUT);
   pinMode(rightButtonPin, INPUT);
-  //attachInterrupt(0, leftClickISR, CHANGE); //interrupt 0 is pin 3 on the leonardo
-  //attachInterrupt(1, rightClickISR, CHANGE); //interrupt 1 is pin 2 on the leonardo
   Mouse.begin();
 }
 
@@ -50,13 +37,9 @@ void setup()
 void loop()
 {
   checkButtons();
- // IRtest();
-  delay(2);
-  //readSensors();
-  //printValues();
-  //compareSensors(); 
-  // hTest();
-    
+  readSensors();
+  compareSensors();
+  delay(1);
 }
 
 //reads all IR sensor values and sets the corresponding variables
@@ -68,7 +51,7 @@ void readSensors()
 	getDownVal();
 }
 
-//get values from each axis and subtract them to set calbration values
+//get values from each axis and subtract them to set calbration values, not implemented in current sensor configuration
 void calibrate()
 {
   getLeftVal();
@@ -81,33 +64,11 @@ void calibrate()
 
 
 
-
-//horizontal cursor test using photo-resistors
-void hTest()
-{
-  if ((leftVal > lightThreshold) && (leftVal - hCal > rightVal))
-  {
-    Mouse.move(-1*cursorStep, 0, 0); //move mouse left
-  } 
-  else if((rightVal > lightThreshold) && (rightVal > leftVal - hCal))
-  {
-    Mouse.move(cursorStep, 0, 0); //move mouse right
-  }
-   if(topVal > hThreshold)
-  {
-    Mouse.move(0, -1*cursorStep, 0); //move mouse down
-  }
-  else if (topVal < lThreshold)
-  {
-    Mouse.move(0, cursorStep, 0); //move mouse up 
-  }
-}
-
 //test code for reading a single IR sensor
 void IRtest()
 {
   getLeftVal();
-  if(leftVal > lThreshold)
+  if(leftVal > threshold)
   {
    Mouse.move(-1*cursorStep, 0, 0); //move mouse left
   }
@@ -121,43 +82,51 @@ void IRtest()
 //looks at button voltage values, decides if a click should happen or not
 void checkButtons()
 {
-  if(digitalRead(leftButtonPin) == LOW)
+  if(digitalRead(leftButtonPin) == LOW) //buttons are active low
   {
-    Mouse.press(MOUSE_LEFT);
+    Mouse.press(MOUSE_LEFT); //start left click
   }
   else if(digitalRead(leftButtonPin) == HIGH)
   {
-    Mouse.release(MOUSE_LEFT);
+    Mouse.release(MOUSE_LEFT); //end left click
   }
-   if(digitalRead(rightButtonPin) == LOW)
-  {
-    Mouse.press(MOUSE_RIGHT);
-  }
-  else if(digitalRead(rightButtonPin) == HIGH)
-  {
-    Mouse.release(MOUSE_RIGHT);
-  }
+//   if(digitalRead(rightButtonPin) == LOW)
+//  {
+//    Mouse.press(MOUSE_RIGHT); //start right click
+//  }
+//  else if(digitalRead(rightButtonPin) == HIGH)
+//  {
+//    Mouse.release(MOUSE_RIGHT); //end right click
+//  }
 }
 
-
+//interprets sensors values and moves mouse accordingly, issues user feedback
 void compareSensors()
 { 
-//	if((topVal > threshold) && (topVal > downVal))
-//	{
-//		Mouse.move(0, cursorStep, 0); //move mouse up
-//	}
-//	else if ((downVal > threshold) && (downVal > topVal))
-//	{
-//		Mouse.move(0, -1*cursorStep, 0); //move mouse down
-//	} 
-//	if ((leftVal > threshold) && (leftVal > rightVal))
-//	{
-//		Mouse.move(-1*cursorStep, 0, 0); //move mouse left
-//	} 
-//	else if((rightVal > threshold) && (rightVal > leftVal))
-//	{
-//		Mouse.move(cursorStep, 0, 0); //move mouse right
-//	}
+//  if((topVal > threshold) && (topVal > downVal)) //checks if the top sensor is being illuminated more than the bottom sensor
+//  {
+//    Mouse.move(0, cursorStep, 0); //move mouse up
+//    digitalWrite(topLEDPin, HIGH); //user feeback LEDs
+//    digitalWrite(downLEDPin, LOW);
+//  }
+//  else if ((downVal > threshold) && (downVal > topVal)) //checks if the bottom sensor is being illuminated more than the top sensor
+//  {
+//    Mouse.move(0, -1*cursorStep, 0); //move mouse down
+//    digitalWrite(downLEDPin, HIGH);
+//    digitalWrite(topLEDPin, LOW);
+//  } 
+  if ((leftVal < threshold) && (leftVal < rightVal)) //checks if the left sensor is being illuminated more than the right sensor
+  {
+    Mouse.move(-1*cursorStep, 0, 0); //move mouse left
+//    digitalWrite(leftLEDPin, HIGH);
+//    digitalWrite(rightLEDPin, LOW);
+  } 
+  else if((rightVal < threshold) && (rightVal < leftVal)) //checks if the right sensor is being illuminated more than the left sensor
+  {
+    Mouse.move(cursorStep, 0, 0); //move mouse right
+//    digitalWrite(rightLEDPin, HIGH);
+//    digitalWrite(leftLEDPin, LOW);
+  }
 }
 
 
@@ -185,7 +154,7 @@ void getDownVal()
 	downVal = analogRead(downSensorPin);
 }
 
-//prints left and right sensor values in serial monitor
+//prints the sensor values in the serial monitor for testing
 void printValues()
 {
  Serial.print("Left = "); 
@@ -197,33 +166,3 @@ void printValues()
  Serial.print(" , Bottom = ");
  Serial.println(downVal);
 }
-
-////hold left button when pressed until it is released, interrupt service routine
-//void leftClickISR() 
-//{
-//	if(left == released)
-//	{
-//		Mouse.press(MOUSE_LEFT);
-//		left = clicked;    
-//	}
-//	else if(left == clicked)
-//	{
-//		Mouse.release(MOUSE_LEFT);
-//		left = released;
-//	}
-//}
-//
-////hold right button when pressed until it is released, interrupt service routine
-//void rightClickISR() 
-//{
-//	if(right == released)
-//	{
-//		Mouse.press(MOUSE_RIGHT);
-//		right = clicked;    
-//	}
-//	else if(right == clicked)
-//	{
-//		Mouse.release(MOUSE_RIGHT);
-//		right = released;
-//	}
-//}
