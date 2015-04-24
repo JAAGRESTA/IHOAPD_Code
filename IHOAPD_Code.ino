@@ -90,42 +90,42 @@ void checkButtons()
   {
     Mouse.release(MOUSE_LEFT); //end left click
   }
-//   if(digitalRead(rightButtonPin) == LOW)
-//  {
-//    Mouse.press(MOUSE_RIGHT); //start right click
-//  }
-//  else if(digitalRead(rightButtonPin) == HIGH)
-//  {
-//    Mouse.release(MOUSE_RIGHT); //end right click
-//  }
+   if(digitalRead(rightButtonPin) == HIGH)
+  {
+    Mouse.press(MOUSE_RIGHT); //start right click
+  }
+  else if(digitalRead(rightButtonPin) == LOW)
+  {
+    Mouse.release(MOUSE_RIGHT); //end right click
+  }
 }
 
 //interprets sensors values and moves mouse accordingly, issues user feedback
 void compareSensors()
 { 
-//  if((topVal > threshold) && (topVal > downVal)) //checks if the top sensor is being illuminated more than the bottom sensor
-//  {
-//    Mouse.move(0, cursorStep, 0); //move mouse up
-//    digitalWrite(topLEDPin, HIGH); //user feeback LEDs
-//    digitalWrite(downLEDPin, LOW);
-//  }
-//  else if ((downVal > threshold) && (downVal > topVal)) //checks if the bottom sensor is being illuminated more than the top sensor
-//  {
-//    Mouse.move(0, -1*cursorStep, 0); //move mouse down
-//    digitalWrite(downLEDPin, HIGH);
-//    digitalWrite(topLEDPin, LOW);
-//  } 
+  if((topVal < threshold) && (topVal < downVal)) //checks if the top sensor is being illuminated more than the bottom sensor
+  {
+    Mouse.move(0, cursorStep, 0); //move mouse up
+    //digitalWrite(topLEDPin, HIGH); //user feeback LEDs
+    //digitalWrite(downLEDPin, LOW);
+  }
+  else if ((downVal < threshold) && (downVal < topVal)) //checks if the bottom sensor is being illuminated more than the top sensor
+  {
+    Mouse.move(0, -1*cursorStep, 0); //move mouse down
+    //digitalWrite(downLEDPin, HIGH);
+    //digitalWrite(topLEDPin, LOW);
+  } 
   if ((leftVal < threshold) && (leftVal < rightVal)) //checks if the left sensor is being illuminated more than the right sensor
   {
     Mouse.move(-1*cursorStep, 0, 0); //move mouse left
-//    digitalWrite(leftLEDPin, HIGH);
-//    digitalWrite(rightLEDPin, LOW);
+    //digitalWrite(leftLEDPin, HIGH);
+    //digitalWrite(rightLEDPin, LOW);
   } 
   else if((rightVal < threshold) && (rightVal < leftVal)) //checks if the right sensor is being illuminated more than the left sensor
   {
     Mouse.move(cursorStep, 0, 0); //move mouse right
-//    digitalWrite(rightLEDPin, HIGH);
-//    digitalWrite(leftLEDPin, LOW);
+    //digitalWrite(rightLEDPin, HIGH);
+    //digitalWrite(leftLEDPin, LOW);
   }
 }
 
