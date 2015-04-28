@@ -39,7 +39,7 @@ void loop()
   checkButtons();
   readSensors();
   compareSensors();
-  delay(1);
+  delay(1); //slows down mouse movement a little
 }
 
 //reads all IR sensor values and sets the corresponding variables
@@ -82,7 +82,7 @@ void IRtest()
 //looks at button voltage values, decides if a click should happen or not
 void checkButtons()
 {
-  if(digitalRead(leftButtonPin) == LOW) //buttons are active low
+  if(digitalRead(leftButtonPin) == LOW) //left button is active low
   {
     Mouse.press(MOUSE_LEFT); //start left click
   }
@@ -90,7 +90,7 @@ void checkButtons()
   {
     Mouse.release(MOUSE_LEFT); //end left click
   }
-   if(digitalRead(rightButtonPin) == HIGH)
+   if(digitalRead(rightButtonPin) == HIGH) //right button is active high for some reason
   {
     Mouse.press(MOUSE_RIGHT); //start right click
   }
