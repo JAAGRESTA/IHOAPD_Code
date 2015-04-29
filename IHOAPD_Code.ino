@@ -51,6 +51,7 @@ void loop()
     checkButtons();
     readSensors();
     compareSensors();
+    delay(1);
    // flopDelay(15);
   }
   
