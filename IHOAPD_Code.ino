@@ -13,16 +13,24 @@
 #define rightLEDPin 5
 #define topLEDPin 6
 #define downLEDPin 7
+#include "TimerOne.h"
  
 
 int topVal = 0, downVal = 0, leftVal = 0, rightVal = 0;
 int threshold = 200;
 int hCal = 0, vCal = 0;
+int timer_flag = 0;
 float cursorStep = 1;
+float sampleTimeMs = 35;
+float timerPer;
+float flopDelay1 = 2000;
+float flopDelay2 = 2000;
 
 //one-time code
 void setup()
 {
+  timerPer = sampleTimeMs * 1000;
+  
   Serial.begin(9600);
   pinMode(leftSensorPin, INPUT);
   pinMode(rightSensorPin, INPUT);
@@ -30,16 +38,22 @@ void setup()
   pinMode(downSensorPin, INPUT);
   pinMode(leftButtonPin, INPUT);
   pinMode(rightButtonPin, INPUT);
+  Timer1.initialize(timerPer);
+  Timer1.attachInterrupt(flagISR);
   Mouse.begin();
 }
 
 //main code
 void loop()
 {
-  checkButtons();
-  readSensors();
-  compareSensors();
-  delay(1); //slows down mouse movement a little
+  if(timer_flag == 1)
+  {
+    checkButtons();
+    readSensors();
+    compareSensors();
+   // flopDelay(15);
+  }
+  
 }
 
 //reads all IR sensor values and sets the corresponding variables
@@ -62,8 +76,30 @@ void calibrate()
   vCal = topVal - downVal;
 }
 
+//everytime the timer triggers an interrupt change flag
+void flagISR()
+{
+  if(timer_flag == 0)
+  {
+     timer_flag = 1; 
+  }
+  else if(timer_flag == 1)
+  {
+     timer_flag = 0;  
+  }
+}
 
-
+//wast time
+void flopDelay(int n)
+{
+ int i = 0;
+ while(i < n)
+ {
+   flopDelay1 = flopDelay1 + flopDelay2;
+   i++;
+   flopDelay1 = 2000;
+ } 
+}
 //test code for reading a single IR sensor
 void IRtest()
 {
