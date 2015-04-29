@@ -46,10 +46,11 @@ void setup()
 //main code
 void loop()
 {
-  if(timer_flag == 1)
-  {
+ 
     checkButtons();
     readSensors();
+  if(timer_flag == 1)
+  {
     compareSensors();
     delay(1);
    // flopDelay(15);
