@@ -7,12 +7,12 @@
 #define rightSensorPin A1
 #define topSensorPin A2
 #define downSensorPin A3
-#define leftButtonPin 3
+#define leftButtonPin 5
 #define rightButtonPin 2
-#define leftLEDPin 4
-#define rightLEDPin 5
-#define topLEDPin 6
-#define downLEDPin 7
+#define leftLEDPin 9
+#define rightLEDPin 10
+#define topLEDPin 11
+#define downLEDPin 12
 #include "TimerOne.h"
  
 
@@ -23,8 +23,7 @@ int timer_flag = 0;
 float cursorStep = 1;
 float sampleTimeMs = 35;
 float timerPer;
-float flopDelay1 = 2000;
-float flopDelay2 = 2000;
+
 
 //one-time code
 void setup()
@@ -53,7 +52,6 @@ void loop()
   {
     compareSensors();
     delay(1);
-   // flopDelay(15);
   }
   
 }
@@ -91,31 +89,7 @@ void flagISR()
   }
 }
 
-//wast time
-void flopDelay(int n)
-{
- int i = 0;
- while(i < n)
- {
-   flopDelay1 = flopDelay1 + flopDelay2;
-   i++;
-   flopDelay1 = 2000;
- } 
-}
-//test code for reading a single IR sensor
-void IRtest()
-{
-  getLeftVal();
-  if(leftVal > threshold)
-  {
-   Mouse.move(-1*cursorStep, 0, 0); //move mouse left
-  }
-  else 
-  {
-    //Mouse.move(cursorStep, 0, 0); //move mouse right
-  }
-  Serial.println(leftVal);
-}
+
 
 //looks at button voltage values, decides if a click should happen or not
 void checkButtons()
